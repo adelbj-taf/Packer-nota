@@ -328,6 +328,8 @@ Jawab hanya JSON.` }
           }
         );
         const geminiData = await geminiResp.json();
+        console.log('Gemini status:', geminiResp.status);
+        console.log('Gemini response:', JSON.stringify(geminiData));
         const rawText = geminiData.candidates[0].content.parts[0].text;
         const clean = rawText.replace(/\`\`\`json|\`\`\`/g, '').trim();
         const parsed = JSON.parse(clean);
