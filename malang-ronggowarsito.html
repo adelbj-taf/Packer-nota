@@ -151,7 +151,7 @@
   const SHEET_ID = '1dhrK4DzZ-0atZf2Bc2T_VtHwn8Yq1rjaeoZa9IZ7ii8';
   const DRIVE_FOLDER_ID = '10OpfymAdHQmhiq_bPv7wagDrAXnNNfzj';
   const GOOGLE_CLIENT_ID = '71655606527-h6ui0ihfflr33ko2vjogttskrum5b7ja.apps.googleusercontent.com';
-  const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets';
+  const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/generative-language';
 
   let accessToken = null;
   let currentImageBlob = null;
@@ -311,10 +311,13 @@
       let customer = '-', notaDate = '-', notaTime = '-', total = '-';
       try {
         const geminiResp = await fetch(
-          'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyA3w24lj3zA4jGxKyJ8sUnpCchVMEwAChA',
+          'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
           {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + accessToken
+            },
             body: JSON.stringify({
               contents: [{
                 parts: [
