@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Packer Nota - Malang Ronggowarsito</title>
+<script src="https://accounts.google.com/gsi/client"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f5f0; min-height: 100vh; color: #1a1a1a; }
+
+  #loginScreen { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; background: #fff; }
+  .login-logo { width: 72px; height: 72px; background: #e8f5e9; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 36px; margin-bottom: 1.5rem; }
+  .login-title { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .login-sub { font-size: 14px; color: #666; margin-bottom: 2rem; }
+  .store-badge { background: #e8f5e9; border-radius: 12px; padding: 12px 20px; margin-bottom: 1.5rem; text-align: center; }
+  .store-badge-label { font-size: 12px; color: #666; }
+  .store-badge-name { font-size: 16px; font-weight: 700; color: #2e7d32; }
+  .login-form { width: 100%; max-width: 340px; }
+  .form-label { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 6px; display: block; }
+  .form-input { width: 100%; padding: 12px 14px; border: 1.5px solid #e0e0e0; border-radius: 12px; font-size: 15px; outline: none; transition: border 0.2s; margin-bottom: 12px; }
+  .form-input:focus { border-color: #2e7d32; }
+  .btn-login { width: 100%; padding: 14px; background: #2e7d32; color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 12px; }
+  .btn-google { width: 100%; padding: 12px; background: #fff; color: #444; border: 1.5px solid #e0e0e0; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .google-icon { width: 18px; height: 18px; }
+
+  #mainApp { display: none; min-height: 100vh; flex-direction: column; }
+  .app-header { background: #2e7d32; color: #fff; padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
+  .header-store { font-size: 16px; font-weight: 700; }
+  .header-packer { font-size: 12px; opacity: 0.8; }
+  .btn-logout { background: rgba(255,255,255,0.15); border: none; color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+
+  .content { flex: 1; padding: 1.25rem; max-width: 480px; margin: 0 auto; width: 100%; }
+
+  .google-status { background: #e8f5e9; border-radius: 12px; padding: 10px 14px; margin-bottom: 1rem; font-size: 13px; color: #2e7d32; display: flex; align-items: center; gap: 8px; }
+  .google-status.warning { background: #fff3e0; color: #e65100; }
+  .btn-connect-google { background: #fff; border: 1.5px solid #2e7d32; color: #2e7d32; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; margin-left: auto; }
+
+  .upload-card { background: #fff; border-radius: 16px; border: 2px dashed #c8e6c9; padding: 0; overflow: hidden; margin-bottom: 1rem; }
+  .upload-card.has-image { border-style: solid; border-color: #2e7d32; }
+  .upload-placeholder { padding: 2.5rem 1.5rem; text-align: center; cursor: pointer; }
+  .upload-placeholder-icon { font-size: 42px; margin-bottom: 10px; }
+  .upload-placeholder-text { font-size: 15px; font-weight: 600; color: #2e7d32; }
+  .upload-placeholder-sub { font-size: 13px; color: #888; margin-top: 4px; }
+  #imagePreview { width: 100%; display: none; position: relative; }
+  #imagePreview img { width: 100%; max-height: 380px; object-fit: contain; display: block; background: #f9f9f9; }
+  .img-overlay-bar { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.55); color: #fff; font-size: 13px; padding: 8px 14px; display: flex; align-items: center; justify-content: space-between; }
+  .btn-change { background: rgba(255,255,255,0.2); border: none; color: #fff; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+
+  .progress-card { background: #e8f5e9; border-radius: 12px; padding: 12px 14px; margin-bottom: 1rem; display: none; align-items: center; gap: 10px; font-size: 14px; color: #2e7d32; }
+  .progress-card.show { display: flex; }
+  .spinner { width: 18px; height: 18px; flex-shrink: 0; border: 2px solid #a5d6a7; border-top-color: #2e7d32; border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .btn-submit { width: 100%; padding: 16px; background: #2e7d32; color: #fff; border: none; border-radius: 14px; font-size: 17px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 1rem; }
+  .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .success-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #2e7d32; color: #fff; padding: 14px 24px; border-radius: 40px; font-size: 15px; font-weight: 600; display: none; align-items: center; gap: 8px; z-index: 100; white-space: nowrap; box-shadow: 0 4px 20px rgba(46,125,50,0.3); }
+  .success-toast.show { display: flex; animation: slideUp 0.3s ease; }
+  @keyframes slideUp { from { transform: translateX(-50%) translateY(20px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+
+  .section-title { font-size: 13px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .history-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 2rem; }
+  .history-item { background: #fff; border-radius: 12px; border: 1px solid #e8f5e9; padding: 12px 14px; display: flex; gap: 12px; align-items: center; }
+  .history-thumb { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: #f0f0f0; }
+  .history-info { flex: 1; min-width: 0; }
+  .history-customer { font-size: 14px; font-weight: 600; }
+  .history-meta { font-size: 12px; color: #888; margin-top: 2px; }
+  .history-badge { background: #e8f5e9; color: #2e7d32; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 20px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-logo">📦</div>
+  <div class="login-title">Packer Nota</div>
+  <div class="login-sub">Login untuk melanjutkan</div>
+  <div class="store-badge">
+    <div class="store-badge-label">Store</div>
+    <div class="store-badge-name">Malang Ronggowarsito</div>
+  </div>
+  <div class="login-form">
+    <label class="form-label">Nama Packer</label>
+    <input class="form-input" id="packerName" placeholder="Nama kamu..." />
+    <label class="form-label">Password</label>
+    <input class="form-input" id="packerPass" type="password" placeholder="Password..." />
+    <button class="btn-login" onclick="doLogin()">Masuk →</button>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="mainApp">
+  <div class="app-header">
+    <div>
+      <div class="header-store">Malang Ronggowarsito</div>
+      <div class="header-packer" id="headerPacker">Packer: -</div>
+    </div>
+    <button class="btn-logout" onclick="doLogout()">Keluar</button>
+  </div>
+
+  <div class="content">
+    <!-- Google Status -->
+    <div class="google-status warning" id="googleStatus">
+      ⚠️ Belum terhubung ke Google
+      <button class="btn-connect-google" onclick="connectGoogle()">Hubungkan</button>
+    </div>
+
+    <!-- Upload -->
+    <div class="upload-card" id="uploadCard" onclick="triggerUpload()">
+      <div class="upload-placeholder" id="uploadPlaceholder">
+        <div class="upload-placeholder-icon">📷</div>
+        <div class="upload-placeholder-text">Foto / Upload Nota</div>
+        <div class="upload-placeholder-sub">Tap untuk ambil foto atau pilih dari galeri</div>
+      </div>
+      <div id="imagePreview">
+        <img id="previewImg" src="" alt="Nota" />
+        <div class="img-overlay-bar">
+          <span id="imgFileName">nota.jpg</span>
+          <button class="btn-change" onclick="event.stopPropagation(); triggerUpload()">Ganti</button>
+        </div>
+      </div>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" capture="environment" onchange="handleFile(event)" style="display:none" />
+
+    <!-- Progress -->
+    <div class="progress-card" id="progressCard">
+      <div class="spinner"></div>
+      <span id="progressText">Menyimpan...</span>
+    </div>
+
+    <!-- Submit -->
+    <button class="btn-submit" id="submitBtn" disabled onclick="submitData()">
+      <span>✅</span> SUBMIT
+    </button>
+
+    <!-- History -->
+    <div class="section-title">Riwayat Submit Hari Ini</div>
+    <div class="history-list" id="historyList">
+      <div style="text-align:center;color:#aaa;font-size:14px;padding:1rem 0;">Belum ada nota yang disubmit</div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="success-toast" id="successToast">✅ Nota berhasil disubmit!</div>
+
+<script>
+  const STORE_NAME = 'Malang Ronggowarsito';
+  const PASSWORD = '123456';
+  const SHEET_ID = '1dhrK4DzZ-0atZf2Bc2T_VtHwn8Yq1rjaeoZa9IZ7ii8';
+  const DRIVE_FOLDER_ID = '10OpfymAdHQmhiq_bPv7wagDrAXnNNfzj';
+  const GOOGLE_CLIENT_ID = '71655606527-h6ui0ihfflr33ko2vjogttskrum5b7ja.apps.googleusercontent.com';
+  const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/cloud-vision';
+
+  let accessToken = null;
+  let currentImageBlob = null;
+  let currentImageBase64 = null;
+  let currentMime = null;
+  let sessionPacker = '';
+  let history = [];
+
+  // LOGIN
+  function doLogin() {
+    const packer = document.getElementById('packerName').value.trim();
+    const pass = document.getElementById('packerPass').value.trim();
+    if (!packer) { alert('Isi nama packer dulu!'); return; }
+    if (pass !== PASSWORD) { alert('Password salah!'); return; }
+    sessionPacker = packer;
+    document.getElementById('headerPacker').textContent = 'Packer: ' + packer;
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'flex';
+    initGoogleClient();
+  }
+
+  function doLogout() {
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'none';
+    accessToken = null;
+    resetForm();
+  }
+
+  // GOOGLE AUTH
+  function initGoogleClient() {
+    const savedToken = sessionStorage.getItem('gAccessToken');
+    const savedExpiry = sessionStorage.getItem('gTokenExpiry');
+    if (savedToken && savedExpiry && Date.now() < parseInt(savedExpiry)) {
+      accessToken = savedToken;
+      showGoogleConnected();
+    }
+  }
+
+  function connectGoogle() {
+    if (typeof google === 'undefined') {
+      alert('Google API belum siap, tunggu beberapa detik lalu coba lagi.');
+      return;
+    }
+    const client = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: SCOPES,
+      callback: (response) => {
+        if (response.access_token) {
+          accessToken = response.access_token;
+          sessionStorage.setItem('gAccessToken', accessToken);
+          sessionStorage.setItem('gTokenExpiry', Date.now() + 3500000);
+          showGoogleConnected();
+        }
+      }
+    });
+    client.requestAccessToken();
+  }
+
+  function showGoogleConnected() {
+    const el = document.getElementById('googleStatus');
+    el.className = 'google-status';
+    el.innerHTML = '✅ Terhubung ke Google Drive & Sheets';
+  }
+
+  // FILE UPLOAD
+  function triggerUpload() { document.getElementById('fileInput').click(); }
+
+  function handleFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    currentMime = file.type;
+    currentImageBlob = file;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      currentImageBase64 = ev.target.result.split(',')[1];
+      document.getElementById('previewImg').src = ev.target.result;
+      document.getElementById('imgFileName').textContent = file.name;
+      document.getElementById('imagePreview').style.display = 'block';
+      document.getElementById('uploadPlaceholder').style.display = 'none';
+      document.getElementById('uploadCard').classList.add('has-image');
+      document.getElementById('submitBtn').disabled = false;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  }
+
+  // SUBMIT
+  async function submitData() {
+    if (!accessToken) {
+      alert('Hubungkan ke Google dulu!');
+      connectGoogle();
+      return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner" style="border-color:rgba(255,255,255,0.4);border-top-color:#fff"></div> Menyimpan...';
+
+    const progress = document.getElementById('progressCard');
+    const progressText = document.getElementById('progressText');
+    progress.classList.add('show');
+
+    try {
+      // 1. Upload foto ke Google Drive
+      progressText.textContent = '📁 Menyimpan foto ke Drive...';
+      const now = new Date();
+      const fileName = 'nota_' + STORE_NAME.replace(/ /g,'_') + '_' + now.getTime() + '.jpg';
+      
+      const metadata = {
+        name: fileName,
+        parents: [DRIVE_FOLDER_ID],
+        mimeType: currentMime
+      };
+
+      const formData = new FormData();
+      formData.append('metadata', new Blob([JSON.stringify(metadata)], {type: 'application/json'}));
+      formData.append('file', currentImageBlob);
+
+      const driveResp = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + accessToken },
+        body: formData
+      });
+
+      const driveData = await driveResp.json();
+      const driveUrl = driveData.webViewLink || ('https://drive.google.com/file/d/' + driveData.id);
+      progressText.textContent = '✅ Foto tersimpan di Drive!';
+
+      // 2. Baca teks nota dengan Vision API
+      progressText.textContent = '🔍 AI sedang membaca nota...';
+      let customer = '-', notaDate = '-', notaTime = '-', total = '-';
+      try {
+        const visionResp = await fetch(
+          'https://vision.googleapis.com/v1/images:annotate',
+          {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer ' + accessToken,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              requests: [{
+                image: { content: currentImageBase64 },
+                features: [{ type: 'TEXT_DETECTION', maxResults: 1 }]
+              }]
+            })
+          }
+        );
+        const visionData = await visionResp.json();
+        const fullText = visionData.responses[0].fullTextAnnotation
+          ? visionData.responses[0].fullTextAnnotation.text
+          : '';
+
+        // Ekstrak data dari teks
+        const lines = fullText.split('\n');
+
+        // Nama customer - cari baris Info/KIA/Customer
+        const customerLine = lines.find(l => /^(Info|KIA|Customer|Nama)\s*:/i.test(l.trim()));
+        if (customerLine) customer = customerLine.split(':').slice(1).join(':').trim();
+
+        // Tanggal - cari format DD-MM-YYYY atau DD/MM/YYYY
+        const dateLine = lines.find(l => /\d{2}[-\/]\d{2}[-\/]\d{4}/.test(l));
+        if (dateLine) {
+          const dateMatch = dateLine.match(/(\d{2}[-\/]\d{2}[-\/]\d{4})/);
+          if (dateMatch) notaDate = dateMatch[1];
+          const timeMatch = dateLine.match(/(\d{2}:\d{2})/);
+          if (timeMatch) notaTime = timeMatch[1];
+        }
+
+        // Total - cari Grand Total atau Total
+        const totalLine = lines.find(l => /grand\s*total/i.test(l));
+        if (totalLine) {
+          const totalMatch = totalLine.match(/[\d.,]+/g);
+          if (totalMatch) total = 'Rp ' + totalMatch[totalMatch.length - 1];
+        }
+
+        progressText.textContent = '✅ Nota berhasil dibaca!';
+      } catch(vErr) {
+        console.log('Vision error:', vErr);
+        progressText.textContent = '⚠️ AI gagal baca, data manual...';
+      }
+
+      // 3. Tulis ke Google Sheets
+      progressText.textContent = '📊 Menyimpan data ke Spreadsheet...';
+      const submitTime = now.toLocaleString('id-ID', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+
+      const sheetsResp = await fetch(
+        'https://sheets.googleapis.com/v4/spreadsheets/' + SHEET_ID + '/values/A1:append?valueInputOption=USER_ENTERED',
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + accessToken,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            values: [[
+              STORE_NAME,
+              sessionPacker,
+              customer,
+              notaDate,
+              notaTime,
+              submitTime,
+              total,
+              driveUrl
+            ]]
+          })
+        }
+      );
+
+      if (sheetsResp.ok) {
+        progressText.textContent = '✅ Data tersimpan!';
+        
+        // Save to local history
+        history.unshift({
+          thumb: document.getElementById('previewImg').src,
+          store: STORE_NAME,
+          packer: sessionPacker,
+          submitTime,
+          driveUrl
+        });
+        renderHistory();
+        showToast();
+        setTimeout(() => { progress.classList.remove('show'); resetForm(); }, 1500);
+      } else {
+        throw new Error('Sheets error: ' + sheetsResp.status);
+      }
+
+    } catch(err) {
+      console.log('Error:', err);
+      progressText.textContent = '❌ Gagal: ' + err.message;
+      setTimeout(() => progress.classList.remove('show'), 3000);
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<span>✅</span> SUBMIT';
+  }
+
+  function renderHistory() {
+    const el = document.getElementById('historyList');
+    if (history.length === 0) {
+      el.innerHTML = '<div style="text-align:center;color:#aaa;font-size:14px;padding:1rem 0;">Belum ada nota yang disubmit</div>';
+      return;
+    }
+    el.innerHTML = history.map(h => `
+      <div class="history-item">
+        <img class="history-thumb" src="${h.thumb}" alt="nota" />
+        <div class="history-info">
+          <div class="history-customer">${h.packer}</div>
+          <div class="history-meta">🏪 ${h.store}</div>
+          <div class="history-meta">⏱ ${h.submitTime}</div>
+        </div>
+        <div class="history-badge">✓</div>
+      </div>
+    `).join('');
+  }
+
+  function showToast() {
+    const t = document.getElementById('successToast');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function resetForm() {
+    currentImageBlob = null;
+    currentImageBase64 = null;
+    currentMime = null;
+    document.getElementById('imagePreview').style.display = 'none';
+    document.getElementById('uploadPlaceholder').style.display = 'block';
+    document.getElementById('uploadCard').classList.remove('has-image');
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('submitBtn').innerHTML = '<span>✅</span> SUBMIT';
+  }
+</script>
+</body>
+</html>
