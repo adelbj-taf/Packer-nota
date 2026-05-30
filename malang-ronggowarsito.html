@@ -151,7 +151,7 @@
   const SHEET_ID = '1dhrK4DzZ-0atZf2Bc2T_VtHwn8Yq1rjaeoZa9IZ7ii8';
   const DRIVE_FOLDER_ID = '10OpfymAdHQmhiq_bPv7wagDrAXnNNfzj';
   const GOOGLE_CLIENT_ID = '71655606527-h6ui0ihfflr33ko2vjogttskrum5b7ja.apps.googleusercontent.com';
-  const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/generative-language';
+  const SCOPES = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/spreadsheets';
 
   let accessToken = null;
   let currentImageBlob = null;
@@ -316,7 +316,7 @@
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + accessToken
+              'x-goog-api-key': 'AQ.Ab8RN6IuWrEsRwjxSWTE2rKQGYxTSWyFGwXkIXDyZDR4zsFPmQ'
             },
             body: JSON.stringify({
               contents: [{
